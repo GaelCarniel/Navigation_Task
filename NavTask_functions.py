@@ -1,4 +1,19 @@
 from psychopy import visual, event, core
+import numpy as np
+import json
+
+
+def generate_references(dim=[4,3]):
+    row, col = dim;
+    n_tiles = row*col;
+    if n_tiles > 35:
+        return "Too much tiles add more images and remove this trigger"
+    img = [f"{i}.png" for i in range(1, n_tiles+1)];
+    player = [f"{i}" for i in range(n_tiles)];
+    
+    ref = dict(zip(player, img))
+
+    return ref
 
 
 def new_position(pos,action,map,dim=[4,3]):
@@ -27,45 +42,48 @@ def new_position(pos,action,map,dim=[4,3]):
     else:
         return "unknown map"
     return new_pos
+    
+# Create a class to group stimuli
+class StimGroup:
+    def __init__(self, win, stimuli):
+        self.win = win
+        self.stimuli = stimuli
 
-win = visual.Window(units='pix', fullscr=True, color='black');
+    def draw(self):
+        for stim in self.stimuli:
+            stim.draw()
 
 
-pos=1;
-dim = [4,3]
-MAP = ['taurus','circle'];
-map_index = 0;
-map = MAP[map_index];
-print(map);
+def mini_map(win,pos,map,dim=[4,3],col = "#719b00",offset = [0.42,0.31]):
+    '''Create a minimap object that you will be able to draw later'''
+    offset_x,offset_y = offset;
+    offset_x = offset_x*win.size[0];
+    offset_y = offset_y*win.size[1];
+    map_height = win.size[1]/4;
+    n_tiles = dim[0]*dim[1];
 
-text = visual.TextStim(win, text=pos,color="white", height=.08*win.size[1],pos=(0,0));
-text.draw();
-win.flip();
-
-while True:
-    print(pos);
-    keys = event.waitKeys();
-    if 'escape' in keys:
-        break
-    elif 'z' in keys:
-        pos = new_position(pos,'up',map,dim=dim);
-    elif 's' in keys:
-        pos = new_position(pos,'down',map,dim=dim);
-    elif 'q' in keys:
-        pos = new_position(pos,'left',map,dim=dim);
-    elif 'd' in keys:
-        pos = new_position(pos,'right',map,dim=dim);
-    elif 'm' in keys:
-        map_index+=1;
-        map_index = map_index%2;
-        map = MAP[map_index];
-        print(map);
-        text_map = visual.TextStim(win, text=f"Map change to {map}",color="white", height=.08*win.size[1],pos=(0,-0.2*win.size[1]));
-        text_map.draw();
+    if map == 'circle':
+        st_off = 9; #Change that if you want the starting point of the cirle to be somewhere else
+        r = 0.4*map_height; #Radius
+        theta = (n_tiles-(pos+st_off)%n_tiles) * (2*np.pi/n_tiles); #theta angle
+        x = np.cos(theta)*r  # X-coordinate
+        y = np.sin(theta)*r  # Y-coordinate
+        dot = visual.Circle(win, radius=0.2*r, pos=(x+offset_x*1.02, y+offset_y*1.2), fillColor=col);
+        frame = visual.Rect(win, width=2.5*r,height=2.5*r,pos=(offset_x*1.02, offset_y*1.2),lineWidth = 0.5*r,lineColor ='#674928');
+        map_obj = StimGroup(win,[dot,frame]);
+        return map_obj
+    elif map =='taurus':
+        space_x = np.linspace(-1,1,dim[1]);
+        space_y = np.linspace(-1,1,dim[0]);
         
-    text = visual.TextStim(win, text=pos,color="white", height=.08*win.size[1],pos=(0,0));
-    text.draw();
-    win.flip();
+        pos_x = space_x[pos%dim[1]];
+        pos_y = space_y[pos//dim[1]];
+        
+        dot = visual.Circle(win,radius= 0.08*map_height,color=col,pos=(offset_x + ((map_height*dim[1])/(2*dim[0]))*pos_x,offset_y + (map_height/2)*pos_y));
+        frame = visual.Rect(win, width=map_height*1.5*(dim[1]/dim[0]),height=map_height*1.5,pos=(offset_x, offset_y),lineWidth = 0.05*map_height,lineColor ='#674928');
+        map_obj = StimGroup(win,[dot,frame]);
+        #Groupe with rect
+        return map_obj 
+    else:
+        return "unknown map"
 
-win.close();
-core.quit();
