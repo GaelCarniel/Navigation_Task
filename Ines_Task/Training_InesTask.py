@@ -83,6 +83,60 @@ def display_state(win,pos,action,dict_places,dict_symbols):
     room.draw()
     win.flip()
 
+def permute(arr, start=0, result=None): #Auto-recursive function
+    if result is None:
+        result = [] # Initiate the combination list
+
+    if start == len(arr) - 1:
+        result.append(arr[:])  # Append a copy of the current permutation
+    else:
+        for i in range(start, len(arr)):
+            arr[start], arr[i] = arr[i], arr[start]  # Swap elements
+            permute(arr, start + 1, result)          # Recurse with result passed
+            arr[start], arr[i] = arr[i], arr[start]  # Swap them back
+
+    return result
+
+def shortest_path(A,B,map):
+  '''This function minimal compute the number of action to go from A to B, and computes the possible paths'''
+  if map == "circle":
+    dist = min((A-B)%(dim[0]*dim[1]),-(A-B)%(dim[0]*dim[1]));
+    n_move = dist//2 + dist%2
+
+    #Paths
+    if (A-B)%(dim[0]*dim[1]) < -(A-B)%(dim[0]*dim[1]): #Backward shorter than Forward
+      one_path = ["down"]*(dist//2) + ["left"]*(dist%2)
+    else:
+      one_path = ["up"]*(dist//2) + ["right"]*(dist%2)
+
+
+  elif map =="taurus":
+    A_x, A_y = A%dim[1], A//dim[1];
+    B_x, B_y = B%dim[1], B//dim[1];
+
+    dist_x = min((A_x-B_x)%dim[1],-(A_x-B_x)%dim[1]);
+    dist_y = min((A_y-B_y)%dim[0],-(A_y-B_y)%dim[0]);
+    n_move = dist_x + dist_y
+
+    #Paths
+    if (A_y-B_y)%dim[0] < -(A_y-B_y)%dim[0]:
+      if (A_x-B_x)%dim[1] < -(A_x-B_x)%dim[1]:
+          one_path = ["down"]*(dist_y) + ["left"]*(dist_x)
+      else:
+          one_path = ["down"]*(dist_y) + ["right"]*(dist_x)
+    else:
+      if (A_x-B_x)%dim[1] < -(A_x-B_x)%dim[1]:
+          one_path = ["up"]*(dist_y) + ["left"]*(dist_x)
+      else:
+          one_path = ["up"]*(dist_y) + ["right"]*(dist_x)
+  else:
+    return "Error: unknown map"
+
+  paths = set(itertools.permutations(one_path, len(one_path)))
+
+  return n_move, paths
+
+
 #Get image references
 with open('Input/reference.json', 'r') as file:
     json_string = file.read()
