@@ -97,7 +97,7 @@ def permute(arr, start=0, result=None): #Auto-recursive function
 
     return result
 
-def shortest_path(A,B,map):
+def shortest_path(A,B,map,dim):
   '''This function minimal compute the number of action to go from A to B, and computes the possible paths'''
   if map == "circle":
     dist = min((A-B)%(dim[0]*dim[1]),-(A-B)%(dim[0]*dim[1]));
