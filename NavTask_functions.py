@@ -101,7 +101,7 @@ def mini_map(win,pos,map,dim=[4,3],col = "#719b00",offset = [0.42,0.31]):
 
 
 
-def display_free_moving(win, pos, keys, map, global_dict, display_t=0.5,map_display=True, dim=[4,3]):
+def display_free_moving(win, pos, keys, map, global_dict, display_t=0.5,map_display=False, dim=[4,3]):
     ref_table = global_dict['position'];
     ref_symbol = global_dict['symbol'];
     if 'z' in keys:
