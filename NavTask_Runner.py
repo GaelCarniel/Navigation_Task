@@ -4,10 +4,10 @@ from NavTask_functions import *
 
 #Constants
 n_explore = 20;
-training_bloc = 1;
+learning_bloc = 1;
 n_test_rw = 2;
 len_walk= 20;
-n_test_seek = 1;
+n_test_seek = 1 
 n_seek = 10;
 rep_seek_samemap = 3;
 
@@ -20,7 +20,10 @@ MAP = ["taurus","circle"];
 start_screen(win);
 while True:
     ##Training
-    for b in range(training_bloc):
+    #for b in range(training_bloc):
+    
+    ##Learning
+    for b in range(learning_bloc):
         print(f"Training {training_bloc}:");
         #Select map order
         np.random.shuffle(MAP);

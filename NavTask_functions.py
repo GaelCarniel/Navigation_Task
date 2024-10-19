@@ -58,42 +58,64 @@ def new_position(pos,action,map,dim=[4,3]):
 # Create a class to group stimuli
 class StimGroup:
     def __init__(self, win, stimuli):
-        self.win = win
-        self.stimuli = stimuli
+        self.win = win;
+        self.stimuli = stimuli;
 
     def draw(self):
         for stim in self.stimuli:
-            stim.draw()
+            print(stim);
+            stim.draw();
 
 
-def mini_map(win,pos,map,dim=[4,3],col = "#719b00",offset = [0.42,0.31]):
+def mini_map(win,pos,map,global_dict,dim=[4,3],col = "#719b00",offset = [0.42,0.31]):
     '''Create a minimap object that you will be able to draw later'''
     offset_x,offset_y = offset;
     offset_x = offset_x*win.size[0];
     offset_y = offset_y*win.size[1];
     map_height = win.size[1]/4;
     n_tiles = dim[0]*dim[1];
-
+    cols = global_dict['color'];
     if map == 'circle':
+        bg_dots=[];
         st_off = 9; #Change that if you want the starting point of the cirle to be somewhere else
         r = 0.4*map_height; #Radius
+        for i in range(n_tiles):
+            if i!=pos:
+                theta = (n_tiles-(i+st_off)%n_tiles) * (2*np.pi/n_tiles); #theta angle
+                x = np.cos(theta)*r  # X-coordinate
+                y = np.sin(theta)*r  # Y-coordinate
+                dot = visual.Circle(win, radius=0.5*0.2*r, pos=(x+offset_x*1.02, y+offset_y*1.2), fillColor='#888888');
+                bg_dots.append(dot);
+
         theta = (n_tiles-(pos+st_off)%n_tiles) * (2*np.pi/n_tiles); #theta angle
         x = np.cos(theta)*r  # X-coordinate
         y = np.sin(theta)*r  # Y-coordinate
         dot = visual.Circle(win, radius=0.2*r, pos=(x+offset_x*1.02, y+offset_y*1.2), fillColor=col);
-        frame = visual.Rect(win, width=2.5*r,height=2.5*r,pos=(offset_x*1.02, offset_y*1.2),lineWidth = 0.5*r,lineColor ='#674928');
-        map_obj = StimGroup(win,[dot,frame]);
+        frame = visual.Rect(win, width=2.5*r,height=2.5*r,pos=(offset_x*1.02, offset_y*1.2),lineWidth = 0.5*r,lineColor =cols['circle']);
+        bg_dots.append(frame);
+        bg_dots.append(dot);
+        map_obj = StimGroup(win,bg_dots);
         return map_obj
     elif map =='taurus':
         space_x = np.linspace(-1,1,dim[1]);
         space_y = np.linspace(-1,1,dim[0]);
+        bg_dots = [];
+        for i in range(n_tiles):
+            if i!=pos:
+                pos_x = space_x[i%dim[1]];
+                pos_y = space_y[i//dim[1]];
+                dot = visual.Circle(win,radius= 0.5*0.08*map_height,color='#888888',pos=(offset_x + ((map_height*dim[1])/(2*dim[0]))*pos_x,offset_y + (map_height/2)*pos_y));
+                bg_dots.append(dot);
+
         
         pos_x = space_x[pos%dim[1]];
         pos_y = space_y[pos//dim[1]];
         
         dot = visual.Circle(win,radius= 0.08*map_height,color=col,pos=(offset_x + ((map_height*dim[1])/(2*dim[0]))*pos_x,offset_y + (map_height/2)*pos_y));
-        frame = visual.Rect(win, width=map_height*1.5*(dim[1]/dim[0]),height=map_height*1.5,pos=(offset_x, offset_y),lineWidth = 0.05*map_height,lineColor ='#674928');
-        map_obj = StimGroup(win,[dot,frame]);
+        frame = visual.Rect(win, width=map_height*1.5*(dim[1]/dim[0]),height=map_height*1.5,pos=(offset_x, offset_y),lineWidth = 0.05*map_height,lineColor =cols['taurus']);
+        bg_dots.append(frame);
+        bg_dots.append(dot);
+        map_obj = StimGroup(win,bg_dots);
         #Groupe with rect
         return map_obj 
     else:
@@ -116,29 +138,27 @@ def display_free_moving(win, pos, keys, map, global_dict, display_t=0.5,map_disp
     elif 'd' in keys:
         pos = new_position(pos,'right',map,dim=dim);
         symbol = visual.ImageStim(win=win,image=f"IMG/{ref_symbol['1']}", size=(0.25*win.size[1],0.25*win.size[1]) ,pos=(0,-.2*win.size[1])); 
-    
-    if map_display:
-        dot = mini_map(win,pos,map);
-    else:
-        dot = visual.Circle(win=win, radius=0.05,fillColor=None, lineColor=None,opacity=0)# Fully transparent
-
-
 
     room = visual.ImageStim(win=win,image=f"IMG/{ref_table[str(pos)]}", size=(0.4*win.size[1],0.4*win.size[1]) ,pos=(0,.2*win.size[1])); 
     room.draw();
     symbol.draw();
-    dot.draw();
+    if map_display:
+        dot = mini_map(win,pos,map,global_dict);
+        dot.draw();
+#    else:
+#        dot = visual.Circle(win=win, radius=0.05,fillColor=None, lineColor=None,opacity=0)# Fully transparent
 
     win.flip();
     core.wait(display_t);
-    room.draw();
 
-    dot.draw();
+    room.draw();
+    if map_display:
+        dot.draw();
     win.flip();
-    
+
     return pos
-    
-    
+
+
 def drop_in(win,map,global_dict,frame,pos = None,wait=2,dim=[4,3]):
     col = global_dict['color'];
     ref_table = global_dict['position'];
