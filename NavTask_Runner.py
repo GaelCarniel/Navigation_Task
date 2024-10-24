@@ -24,7 +24,7 @@ while True:
     
     ##Learning
     for b in range(learning_bloc):
-        print(f"Training {training_bloc}:");
+        print(f"Training {b}:");
         #Select map order
         np.random.shuffle(MAP);
         for t in range(2):
